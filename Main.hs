@@ -1,19 +1,24 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE RecordWildCards, NamedFieldPuns #-}
 
 
 module Main where
 
 
+import Control.Monad
 import qualified Data.List as L
 import qualified Data.ByteString.Lazy as BS
+import qualified Data.ByteString.Lazy.Char8 as B8
 import Data.Char
 import Data.Maybe
+import System.IO
+import System.Exit
 
 import Options.Applicative hiding (header)
 import Control.Lens
 import qualified Options.Applicative as O
 import Network.Wreq
+import System.Process
 
 
 makeUrl :: IpsumOpts -> String
@@ -38,9 +43,33 @@ makeUrl IpsumOpts{..} =
 download :: String -> IO BS.ByteString
 download = fmap (view responseBody) . get
 
+doCopy :: OutputDest -> Bool
+doCopy Print = False
+doCopy _     = True
+
+doPrint :: OutputDest -> Bool
+doPrint Copy = False
+doPrint _    = True
+
+copy :: BS.ByteString -> IO ()
+copy text = do
+    (Just stdin, _, _, p) <- createProcess (proc "pbcopy" []) { std_in = CreatePipe }
+    B8.hPut stdin text
+    hClose stdin
+    ec <- waitForProcess p
+    case ec of
+        ExitSuccess -> return ()
+        ExitFailure ec' -> hPutStrLn stderr $ "ERROR: " ++ show ec'
+
 
 main :: IO ()
-main = print =<< download . makeUrl =<< execParser ipsumOpts
+main = do
+    opts@IpsumOpts{optOutput} <- execParser ipsumOpts
+    text <- download $ makeUrl opts
+    when (doPrint optOutput) $
+        B8.putStrLn text
+    when (doCopy optOutput) $
+        copy text
 
 
 data IpsumSize = Short | Medium | Long | VeryLong
