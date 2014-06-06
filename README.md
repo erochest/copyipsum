@@ -5,7 +5,7 @@ Copies lorem ipsum text from the Loripsum.net API.
 ## Usage
 
 ```
-copyipsum [-h] [-p] [-s {short,medium,long,verylong}] [-a]
+copyipsum [-h] [-p PARAGRAPHS] [-s {short,medium,long,verylong}] [-a]
                  [-b] [-c] [-d] [-H] [-l] [-q] [-t] [-o] [-u]
                  [-O {print,copy,both}]
 ```
