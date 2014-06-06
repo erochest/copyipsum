@@ -1,24 +1,25 @@
+{-# LANGUAGE NamedFieldPuns    #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards, NamedFieldPuns #-}
+{-# LANGUAGE RecordWildCards   #-}
 
 
 module Main where
 
 
-import Control.Monad
-import qualified Data.List as L
-import qualified Data.ByteString.Lazy as BS
+import           Control.Monad
+import qualified Data.ByteString.Lazy       as BS
 import qualified Data.ByteString.Lazy.Char8 as B8
-import Data.Char
-import Data.Maybe
-import System.IO
-import System.Exit
+import           Data.Char
+import qualified Data.List                  as L
+import           Data.Maybe
+import           System.Exit
+import           System.IO
 
-import Options.Applicative hiding (header)
-import Control.Lens
-import qualified Options.Applicative as O
-import Network.Wreq
-import System.Process
+import           Control.Lens
+import           Network.Wreq
+import           Options.Applicative        hiding (header)
+import qualified Options.Applicative        as O
+import           System.Process
 
 
 makeUrl :: IpsumOpts -> String
