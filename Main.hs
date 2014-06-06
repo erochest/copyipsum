@@ -1,14 +1,41 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 
 module Main where
 
 
-import Options.Applicative
+import qualified Data.List as L
+import Data.Char
+import Data.Maybe
+
+import Options.Applicative hiding (header)
+import qualified Options.Applicative as O
+import Network.Wreq
+
+
+makeUrl :: IpsumOpts -> String
+makeUrl IpsumOpts{..} =
+    L.intercalate "/" $ catMaybes [ Just "http://loripsum.net/api"
+                                  , bool optAllCaps   "allcaps"
+                                  , bool optDecorate  "decorate"
+                                  , bool optCode      "code"
+                                  , bool optDl        "dl"
+                                  , bool optHeaders   "headers"
+                                  , bool optLink      "link"
+                                  , bool optBq        "bq"
+                                  , bool optPlainText "plaintext"
+                                  , bool optOl        "ol"
+                                  , bool optUl        "ul"
+                                  , Just $ show optParagraphs
+                                  , Just . map toLower $ show optSize
+                                  ]
+    where bool True  x = Just x
+          bool False _ = Nothing
 
 
 main :: IO ()
-main = print =<< execParser ipsumOpts
+main = putStrLn . makeUrl =<< execParser ipsumOpts
 
 
 data IpsumSize = Short | Medium | Long | VeryLong
@@ -19,19 +46,19 @@ data OutputDest = Print | Copy | Both
 
 data IpsumOpts
     = IpsumOpts
-    { paragraphs :: Int
-    , size       :: IpsumSize
-    , allCaps    :: Bool
-    , decorate   :: Bool
-    , code       :: Bool
-    , dl         :: Bool
-    , headers    :: Bool
-    , link       :: Bool
-    , bq         :: Bool
-    , plainText  :: Bool
-    , ol         :: Bool
-    , ul         :: Bool
-    , output     :: OutputDest
+    { optParagraphs :: Int
+    , optSize       :: IpsumSize
+    , optAllCaps    :: Bool
+    , optDecorate   :: Bool
+    , optCode       :: Bool
+    , optDl         :: Bool
+    , optHeaders    :: Bool
+    , optLink       :: Bool
+    , optBq         :: Bool
+    , optPlainText  :: Bool
+    , optOl         :: Bool
+    , optUl         :: Bool
+    , optOutput     :: OutputDest
     } deriving (Show)
 
 ipsumOpts' :: Parser IpsumOpts
@@ -60,5 +87,5 @@ ipsumOpts :: ParserInfo IpsumOpts
 ipsumOpts = info (helper <*> ipsumOpts')
                  (  fullDesc
                  <> progDesc "Copies lorem ipsum text from the Loripsum.net API."
-                 <> header "copyipsum - Copies lorem ipsum text from the Loripsum.net API.")
+                 <> O.header "copyipsum - Copies lorem ipsum text from the Loripsum.net API.")
 
