@@ -54,9 +54,9 @@ doPrint _    = True
 
 copy :: BS.ByteString -> IO ()
 copy text = do
-    (Just stdin, _, _, p) <- createProcess (proc "pbcopy" []) { std_in = CreatePipe }
-    B8.hPut stdin text
-    hClose stdin
+    (Just std_in, _, _, p) <- createProcess (proc "pbcopy" []) { std_in = CreatePipe }
+    B8.hPut std_in text
+    hClose std_in
     ec <- waitForProcess p
     case ec of
         ExitSuccess -> return ()
