@@ -1,0 +1,70 @@
+#!/usr/bin/env python
+
+'''Copies lorem ipsum text from the Loripsum.net API.'''
+
+import sys
+import argparse
+import requests
+import subprocess
+
+def copy(input):
+    popen = subprocess.Popen(['pbcopy'], stdin=subprocess.PIPE)
+    popen.communicate(input.encode('utf8'))
+
+def flag(args, name):
+    return name if getattr(args, name, None) else None
+
+def lorem_ipsum(args):
+    urlparts = [
+            'http://loripsum.net/api',
+            flag(args,'allcaps'),
+            flag(args,'decorate'),
+            flag(args,'code'),
+            flag(args,'dl'),
+            flag(args,'headers'),
+            flag(args,'link'),
+            flag(args,'bq'),
+            flag(args,'plaintext'),
+            flag(args,'ol'),
+            flag(args,'ul'),
+            str(args.paragraphs) if args.paragraphs else None,
+            args.size
+            ]
+
+    url = '/'.join(p for p in urlparts if p is not None)
+    r = requests.get(url)
+    return r.text
+
+
+def parse_args(argv=None):
+    argv = argv if argv is not None else sys.argv[1:]
+    parser = argparse.ArgumentParser(description=__doc__)
+
+    parser.add_argument('-p', '--paragraphs', dest='paragraphs', action='store', type=int, default=0, help='The number of paragraphs to generate. Defaults to 4.')
+    parser.add_argument('-s', '--size', dest='size', action='store', choices=['short', 'medium', 'long', 'verylong'], default='medium', help='The size of paragraphs. Options are short, medium, long, verylong. Defaults to medium.')
+    parser.add_argument('-a', '--allcaps', dest='allcaps', action='store_true', help='Use ALL CAPS.')
+    parser.add_argument('-b', '--decorate', dest='decorate', action='store_true', help='Add decorated text, including bold, italic and mark.')
+    parser.add_argument('-c', '--code', dest='code', action='store_true', help='Add code samples.')
+    parser.add_argument('-d', '--dl', dest='dl', action='store_true', help='Add definition lists.')
+    parser.add_argument('-H', '--headers', dest='headers', action='store_true', help='Add headers.')
+    parser.add_argument('-l', '--link', dest='link', action='store_true', help='Add links.')
+    parser.add_argument('-q', '--bq', dest='bq', action='store_true', help='Add blockquotes.')
+    parser.add_argument('-t', '--plaintext', dest='plaintext', action='store_true', help='Return plain text, no HTML.')
+    parser.add_argument('-o', '--ol', dest='ol', action='store_true', help='Add ordered lists.')
+    parser.add_argument('-u', '--ul', dest='ul', action='store_true', help='Add unordered lists.')
+    parser.add_argument('-O', '--output', dest='output', action='store', default='copy', choices=['print', 'copy', 'both'], help='Output option.')
+
+    args = parser.parse_args(argv)
+    return args
+
+if __name__ == '__main__':
+
+    args = parse_args()
+    text = lorem_ipsum(args)
+
+    if args.output in ('copy', 'both'):
+        copy(text)
+
+    if args.output in ('print', 'both'):
+        print(text)
+
