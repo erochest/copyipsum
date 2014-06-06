@@ -3,6 +3,8 @@
 {-# LANGUAGE RecordWildCards   #-}
 
 
+-- TODO: Documentation
+
 module Main where
 
 
@@ -22,6 +24,8 @@ import qualified Options.Applicative        as O
 import           System.Process
 
 
+-- TODO: Accumulate the URL in Writer.
+-- TODO: Use [((IpsumOpts -> Bool, String)] to pull in the flags.
 makeUrl :: IpsumOpts -> String
 makeUrl IpsumOpts{..} =
     L.intercalate "/" $ catMaybes [ Just "http://loripsum.net/api"
@@ -52,6 +56,7 @@ doPrint :: OutputDest -> Bool
 doPrint Copy = False
 doPrint _    = True
 
+-- TODO: Use Shelly?
 copy :: BS.ByteString -> IO ()
 copy text = do
     (Just std_in, _, _, p) <- createProcess (proc "pbcopy" []) { std_in = CreatePipe }
@@ -59,7 +64,7 @@ copy text = do
     hClose std_in
     ec <- waitForProcess p
     case ec of
-        ExitSuccess -> return ()
+        ExitSuccess     -> return ()
         ExitFailure ec' -> hPutStrLn stderr $ "ERROR: " ++ show ec'
 
 
