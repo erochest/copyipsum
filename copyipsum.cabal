@@ -25,5 +25,7 @@ executable copyipsum
                      , process
                      , wreq
                      , optparse-applicative
+                     , lens
+                     , bytestring
   -- hs-source-dirs:      
   default-language:    Haskell2010

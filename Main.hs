@@ -6,10 +6,12 @@ module Main where
 
 
 import qualified Data.List as L
+import qualified Data.ByteString.Lazy as BS
 import Data.Char
 import Data.Maybe
 
 import Options.Applicative hiding (header)
+import Control.Lens
 import qualified Options.Applicative as O
 import Network.Wreq
 
@@ -33,9 +35,12 @@ makeUrl IpsumOpts{..} =
     where bool True  x = Just x
           bool False _ = Nothing
 
+download :: String -> IO BS.ByteString
+download = fmap (view responseBody) . get
+
 
 main :: IO ()
-main = putStrLn . makeUrl =<< execParser ipsumOpts
+main = print =<< download . makeUrl =<< execParser ipsumOpts
 
 
 data IpsumSize = Short | Medium | Long | VeryLong
