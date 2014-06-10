@@ -16,6 +16,7 @@ import qualified Data.List                  as L
 import           Data.Maybe
 import           System.Exit
 import           System.IO
+import Control.Monad.Writer
 
 import           Control.Lens
 import           Network.Wreq
@@ -24,26 +25,23 @@ import qualified Options.Applicative        as O
 import           System.Process
 
 
--- TODO: Accumulate the URL in Writer.
 -- TODO: Use [((IpsumOpts -> Bool, String)] to pull in the flags.
 makeUrl :: IpsumOpts -> String
-makeUrl IpsumOpts{..} =
-    L.intercalate "/" $ catMaybes [ Just "http://loripsum.net/api"
-                                  , bool optAllCaps   "allcaps"
-                                  , bool optDecorate  "decorate"
-                                  , bool optCode      "code"
-                                  , bool optDl        "dl"
-                                  , bool optHeaders   "headers"
-                                  , bool optLink      "link"
-                                  , bool optBq        "bq"
-                                  , bool optPlainText "plaintext"
-                                  , bool optOl        "ol"
-                                  , bool optUl        "ul"
-                                  , Just $ show optParagraphs
-                                  , Just . map toLower $ show optSize
-                                  ]
-    where bool True  x = Just x
-          bool False _ = Nothing
+makeUrl IpsumOpts{..} = execWriter $ do
+    tell "http://loripsum.net/api"
+    api optAllCaps   "allcaps"
+    api optDecorate  "decorate"
+    api optCode      "code"
+    api optDl        "dl"
+    api optHeaders   "headers"
+    api optLink      "link"
+    api optBq        "bq"
+    api optPlainText "plaintext"
+    api optOl        "ol"
+    api optUl        "ul"
+    tell $ '/' : show optParagraphs
+    tell . ('/':) . map toLower $ show optSize
+    where api opt name = when opt $ tell "/" >> tell name
 
 download :: String -> IO BS.ByteString
 download = fmap (view responseBody) . get
