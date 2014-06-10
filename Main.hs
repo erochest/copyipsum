@@ -71,7 +71,10 @@ copy text = do
 main :: IO ()
 main = do
     opts@IpsumOpts{optOutput} <- execParser ipsumOpts
-    text <- download $ makeUrl opts
+    let url = makeUrl opts
+    when (optPrintUrl opts) $
+        putStrLn url
+    text <- download url
     when (doPrint optOutput) $
         B8.putStrLn text
     when (doCopy optOutput) $
@@ -99,6 +102,7 @@ data IpsumOpts
     , optOl         :: Bool
     , optUl         :: Bool
     , optOutput     :: OutputDest
+    , optPrintUrl   :: Bool
     } deriving (Show)
 
 ipsumOpts' :: Parser IpsumOpts
@@ -122,6 +126,7 @@ ipsumOpts' =   IpsumOpts
            <*> switch (  short 'o' <> long "ol" <> help "Add ordered lists.")
            <*> switch (  short 'u' <> long "ul" <> help "Add unordered lists.")
            <*> option (  short 'O' <> long "output" <> value Copy <> help "Output option.")
+           <*> switch (  short 'P' <> long "print-url" <> help "Print the URL.")
 
 ipsumOpts :: ParserInfo IpsumOpts
 ipsumOpts = info (helper <*> ipsumOpts')
