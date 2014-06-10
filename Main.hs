@@ -12,8 +12,6 @@ import           Control.Monad
 import qualified Data.ByteString.Lazy       as BS
 import qualified Data.ByteString.Lazy.Char8 as B8
 import           Data.Char
-import qualified Data.List                  as L
-import           Data.Maybe
 import           System.Exit
 import           System.IO
 import Control.Monad.Writer
@@ -25,23 +23,26 @@ import qualified Options.Applicative        as O
 import           System.Process
 
 
--- TODO: Use [((IpsumOpts -> Bool, String)] to pull in the flags.
 makeUrl :: IpsumOpts -> String
 makeUrl IpsumOpts{..} = execWriter $ do
-    tell "http://loripsum.net/api"
-    api optAllCaps   "allcaps"
-    api optDecorate  "decorate"
-    api optCode      "code"
-    api optDl        "dl"
-    api optHeaders   "headers"
-    api optLink      "link"
-    api optBq        "bq"
-    api optPlainText "plaintext"
-    api optOl        "ol"
-    api optUl        "ul"
-    tell $ '/' : show optParagraphs
-    tell . ('/':) . map toLower $ show optSize
-    where api opt name = when opt $ tell "/" >> tell name
+    base "http://loripsum.net/api"
+    forM_ fields $ uncurry apiFlag
+    always $ show optParagraphs
+    always $ show optSize
+    where base             = tell
+          apiFlag opt name = when opt $ tell ('/':name)
+          always           = tell . ('/':) . map toLower
+          fields = [ (optAllCaps,   "allcaps")
+                   , (optDecorate,  "decorate")
+                   , (optCode,      "code")
+                   , (optDl,        "dl")
+                   , (optHeaders,   "headers")
+                   , (optLink,      "link")
+                   , (optBq,        "bq")
+                   , (optPlainText, "plaintext")
+                   , (optOl,        "ol")
+                   , (optUl,        "ul")
+                   ]
 
 download :: String -> IO BS.ByteString
 download = fmap (view responseBody) . get
