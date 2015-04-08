@@ -30,6 +30,7 @@ makeUrl IpsumOpts{..} = execWriter $ do
     always $ show optParagraphs
     always $ show optSize
     where base             = tell
+          apiFlag :: Bool -> String -> Writer String ()
           apiFlag opt name = when opt $ tell ('/':name)
           always           = tell . ('/':) . map toLower
           fields = [ (optAllCaps,   "allcaps")
@@ -106,26 +107,26 @@ data IpsumOpts
 
 ipsumOpts' :: Parser IpsumOpts
 ipsumOpts' =   IpsumOpts
-           <$> option (  short 'p' <> long "paragraphs" <> metavar "PARAGRAPHS"
-                          <> value 4
-                          <> help "The number of paragraphs to generate. Defaults to 4.")
-           <*> option (  short 's' <> long "size" <> metavar "SIZE"
-                          <> value Medium
-                          <> help "The size of paragraphs. Options are Short, \
+           <$> option auto (  short 'p' <> long "paragraphs" <> metavar "PARAGRAPHS"
+                           <> value 4
+                           <> help "The number of paragraphs to generate. Defaults to 4.")
+           <*> option auto (  short 's' <> long "size" <> metavar "SIZE"
+                           <> value Medium
+                           <> help "The size of paragraphs. Options are Short, \
                                   \Medium, Long, VeryLong. Defaults to Medium.")
-           <*> switch (  short 'a' <> long "allcaps" <> help "Use ALL CAPS.")
-           <*> switch (  short 'b' <> long "decorate"
-                      <> help "Add decorated text, including bold, italic and mark.")
-           <*> switch (  short 'c' <> long "code" <> help "Add code samples.")
-           <*> switch (  short 'd' <> long "dl" <> help "Add definition lists.")
-           <*> switch (  short 'H' <> long "headers" <> help "Add headers.")
-           <*> switch (  short 'l' <> long "link" <> help "Add links.")
-           <*> switch (  short 'q' <> long "bq" <> help "Add blockquotes.")
-           <*> switch (  short 't' <> long "plaintext" <> help "Return plain text, no HTML.")
-           <*> switch (  short 'o' <> long "ol" <> help "Add ordered lists.")
-           <*> switch (  short 'u' <> long "ul" <> help "Add unordered lists.")
-           <*> option (  short 'O' <> long "output" <> value Copy <> help "Output option.")
-           <*> switch (  short 'P' <> long "print-url" <> help "Print the URL.")
+           <*> switch      (  short 'a' <> long "allcaps" <> help "Use ALL CAPS.")
+           <*> switch      (  short 'b' <> long "decorate"
+                           <> help "Add decorated text, including bold, italic and mark.")
+           <*> switch      (  short 'c' <> long "code" <> help "Add code samples.")
+           <*> switch      (  short 'd' <> long "dl" <> help "Add definition lists.")
+           <*> switch      (  short 'H' <> long "headers" <> help "Add headers.")
+           <*> switch      (  short 'l' <> long "link" <> help "Add links.")
+           <*> switch      (  short 'q' <> long "bq" <> help "Add blockquotes.")
+           <*> switch      (  short 't' <> long "plaintext" <> help "Return plain text, no HTML.")
+           <*> switch      (  short 'o' <> long "ol" <> help "Add ordered lists.")
+           <*> switch      (  short 'u' <> long "ul" <> help "Add unordered lists.")
+           <*> option auto (  short 'O' <> long "output" <> value Copy <> help "Output option.")
+           <*> switch      (  short 'P' <> long "print-url" <> help "Print the URL.")
 
 ipsumOpts :: ParserInfo IpsumOpts
 ipsumOpts = info (helper <*> ipsumOpts')
